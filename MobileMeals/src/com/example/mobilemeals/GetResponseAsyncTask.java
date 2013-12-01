@@ -64,9 +64,7 @@ public class GetResponseAsyncTask extends AsyncTask<String, Void, JSONObject>{
 		finally {
 			try{if(inputStream != null)inputStream.close();}catch(Exception squish){}
 		}
-		
-		
-		
+
 		return null;
 	}
 

@@ -7,5 +7,11 @@
     <string name="title_activity_sign_up_web_view">SignUpWebView</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="textview">TextView</string>
+    <string name="setLocation">Set Location</string>
+    <string name="title_activity_user_login">UserLogin</string>
+    <string name="username">Username:</string>
+    <string name="password">Password</string>
+    <string name="email">Email:</string>
+    <string name="submit">Submit</string>
 
 </resources>

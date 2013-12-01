@@ -13,7 +13,7 @@ public class Tweet implements Serializable {
 	String geo;
 	String content;
 	String screen_name;
-	
+	String avatar;
 	
 	
 	public Tweet(JSONObject obj){
@@ -22,13 +22,25 @@ public class Tweet implements Serializable {
 			geo = obj.getString("geo");
 			content = obj.getString("content");
 			screen_name = obj.getString("screen_name");
-					
+			avatar = obj.getString("avatar");
 			datePosted = Tweets.convertDate(obj.getString("datePosted"));
 			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
+	}
+
+
+
+	public String getAvatar() {
+		return avatar;
+	}
+
+
+
+	public void setAvatar(String avatar) {
+		this.avatar = avatar;
 	}
 
 

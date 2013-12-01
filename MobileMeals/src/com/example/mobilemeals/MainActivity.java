@@ -1,43 +1,31 @@
 package com.example.mobilemeals;
 
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
+import java.util.ArrayList;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.SyncStateContract.Constants;
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
-import android.app.ActionBar.TabListener;
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.view.Menu;
 
-public class MainActivity extends Activity implements FragmentTruckListView.OnTruckSelectedListener {
-	static public String USER_KEY = "user";
+public class MainActivity extends Activity implements FragmentTruckListView.OnTruckSelectedListener, FragmentMap.OnMapListener {
+	static public String MAP_TAG = "Map";
+	static public String TRUCK_TAG = "Trucks";
+	static public String USER_KEY = "username";
 	static public String baseUrl = "http://192.168.1.5:3000";
 	static public String postUserUrl = baseUrl + "/users/session";
-	static public String signUpUrl = baseUrl + "/signup";
+	static public String signUpUrl = baseUrl + "/users";
+	static public String truckUrl = baseUrl + "/truck";
+	static public String trucksUrl = baseUrl + "/trucks";
 
-
+	ArrayList<Truck> trucks;
 	String username;
-	GoogleMap map;
-
-	MapFragment gMap;
-	FragmentTruckListView truckListFragment;
-
 	ActionBar.Tab Tab1, Tab2;
 
 	@Override
@@ -49,22 +37,11 @@ public class MainActivity extends Activity implements FragmentTruckListView.OnTr
 		// Check for username
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		username = prefs.getString(USER_KEY, "-1");
-
-		// Create map fragment
-		GooglePlayServicesUtil.isGooglePlayServicesAvailable(getApplicationContext());
-		gMap = new MapFragment(){
-			@Override
-			public void onActivityCreated(Bundle savedInstanceState) {
-				// TODO Auto-generated method stub
-				super.onActivityCreated(savedInstanceState);
-				map = this.getMap();
-				setupMap();
-			}
-		};
-
-		// create truck fragment
-		truckListFragment = new FragmentTruckListView();
-
+		
+		if (username == "-1"){
+			Intent intent = new Intent(this, UserLogin.class);
+			startActivity(intent);
+		}
 
 		ActionBar actionBar = getActionBar();
 
@@ -77,102 +54,28 @@ public class MainActivity extends Activity implements FragmentTruckListView.OnTr
 		// Create Actionbar Tabs
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-		Tab1 = actionBar.newTab().setText("Trucks");
-		Tab2 = actionBar.newTab().setText("Map");
+		
+		TabListener<FragmentTruckListView> truckTabListener = 
+				new TabListener<FragmentTruckListView>(this, TRUCK_TAG, FragmentTruckListView.class);
+		
+		TabListener<FragmentMap> mapTabListener = 
+				new TabListener<FragmentMap>(this, MAP_TAG, FragmentMap.class);
 
+		// Create tab
+		Tab1 = actionBar.newTab();
+		Tab2 = actionBar.newTab();
+
+		// Set text
+		Tab1.setText("Trucks");
+		Tab2.setText("Map");
 
 		// Set Tab Listeners
-		Tab1.setTabListener(new TabListener(this, "album", FragmentTruckListView.class));
-		//Tab2.setTabListener();
-
+		Tab1.setTabListener(truckTabListener);
+		Tab2.setTabListener(mapTabListener);
 
 		// Add tabs to actionbar
 		actionBar.addTab(Tab1);
 		actionBar.addTab(Tab2);
-
-		/*
-
-		//setup inital fragment
-		FragmentManager fragmentManager = getFragmentManager();
-		FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-		//FragmentTruckListView truckListFragment = new FragmentTruckListView();
-
-		fragmentTransaction.add(R.id.main_activity_layout, gMap);
-		fragmentTransaction.commit();
-		 */
-
-	}
-
-	public void setupMap(){
-
-		map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-
-			@Override
-			public void onMapClick(LatLng loc) {
-				// TODO Auto-generated method stub
-				drawMarkerLatLng(loc);
-			}
-		});
-
-		map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-
-			@Override
-			public boolean onMarkerClick(Marker loc) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-		});
-
-
-		map.setMyLocationEnabled(true);
-
-		// Getting LocationManager object from System Service LOCATION_SERVICE
-		LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-		// Creating a criteria object to retrieve provider
-		Criteria criteria = new Criteria();
-
-
-		// Getting the name of the best provider
-		String provider = locationManager.getBestProvider(criteria, true);
-		Log.i("Provider", provider);
-		// Getting Current Location
-		//Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-		LocationListener locationListener = new LocationListener() {
-			public void onLocationChanged(Location location) {}
-
-			public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-			public void onProviderEnabled(String provider) {}
-
-			public void onProviderDisabled(String provider) {}
-		};
-		// Register the listener with the Location Manager to receive location updates
-		//locationManager.requestLocationUpdates(provider, 0, 0, locationListener);
-
-		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(35.2270869, -80.8431267), 13));
-
-	}
-
-	public void drawMarkerLocation(Location location){
-		//map.clear();
-		LatLng currentPosition = new LatLng(location.getLatitude(), location.getLongitude());
-
-		map.addMarker(new MarkerOptions()
-		.draggable(true)
-		.position(currentPosition)
-		.snippet("Lat:" + location.getLatitude() + "Lng:"+ location.getLongitude()));
-
-	}
-
-	public void drawMarkerLatLng(LatLng location){
-		map.clear();
-
-		map.addMarker(new MarkerOptions()
-		.draggable(true)
-		.position(location));
 	}
 
 
@@ -187,17 +90,78 @@ public class MainActivity extends Activity implements FragmentTruckListView.OnTr
 
 	@Override
 	public void onTruckSelected(Truck t) {
-
 		FragmentManager fragmentManager = getFragmentManager();
 		FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 		FragmentTweetListView tweetListView = new FragmentTweetListView();
 
 		tweetListView.setTweets(t.tweets.getTweets());
+	
+		//fragmentManager.
 		fragmentTransaction.replace(R.id.main_activity_layout, tweetListView);
 		fragmentTransaction.addToBackStack(null);
 		fragmentTransaction.commit();
-
+		
 	}
 
+	@Override
+	public void passTrucks(ArrayList<Truck> trucks) {
+		this.trucks = trucks;
+	}
+	
+	@Override
+	public void mapInitialized() {
+		FragmentManager fragmentManager = getFragmentManager();
+		FragmentMap map = (FragmentMap) fragmentManager.findFragmentByTag(MAP_TAG);
+		map.setTrucks(trucks);
+	
+	}
+
+
+	
+	private class TabListener<T extends Fragment> implements ActionBar.TabListener {
+		private Fragment mFragment;
+		private final Activity mActivity;
+		private final String mTag;
+		private final Class<T> mClass;
+
+		/**
+		 * Constructor used each time a new tab is created.
+		 * 
+		 * @param activity
+		 *            The host Activity, used to instantiate the fragment
+		 * @param tag
+		 *            The identifier tag for the fragment
+		 * @param clz
+		 *            The fragment's Class, used to instantiate the fragment
+		 */
+		public TabListener(Activity activity, String tag, Class<T> clz) {
+			mActivity = activity;
+			mTag = tag;
+			mClass = clz;
+		}
+
+		public void onTabSelected(Tab tab, FragmentTransaction ft) {
+			// Check if the fragment is already initialized
+			if (mFragment == null) {
+				// If not, instantiate and add it to the activity
+				mFragment = Fragment.instantiate(mActivity, mClass.getName());
+				ft.add(R.id.main_activity_layout, mFragment, mTag);
+			} else {
+				// If it exists, simply attach it in order to show it
+				ft.attach(mFragment);
+			}
+		}
+
+		public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+			if (mFragment != null) {
+				// Detach the fragment, because another one is being attached
+				ft.detach(mFragment);
+			}
+		}
+
+		public void onTabReselected(Tab tab, FragmentTransaction ft) {
+			
+		}
+	}
 
 }

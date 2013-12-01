@@ -117,7 +117,10 @@ public class FragmentTruckListView extends Fragment implements AdapterView.OnIte
 
 		for (Truck t : hashMapTrucks.values())
 			trucks.add(t);
-
+		
+		
+		mListener.passTrucks(trucks);
+		
 		Log.i("Fragment", trucks.toString());
 		
 		//Populate Listview
@@ -139,6 +142,7 @@ public class FragmentTruckListView extends Fragment implements AdapterView.OnIte
 
 	public interface OnTruckSelectedListener {
 		public void onTruckSelected(Truck t);
+		public void passTrucks(ArrayList<Truck> trucks);
 	}
 
 

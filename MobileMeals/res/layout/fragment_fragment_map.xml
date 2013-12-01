@@ -1,0 +1,36 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FragmentMap" >
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <fragment
+        android:id="@+id/map"
+        android:name="com.example.mobilemeals.MainActivity"
+        android:layout_width="match_parent"
+        android:layout_height="350dp"
+        class="com.google.android.gms.maps.MapFragment" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:text="@string/setLocation" />
+
+        <Spinner
+            android:id="@+id/spinner1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+</FrameLayout>
