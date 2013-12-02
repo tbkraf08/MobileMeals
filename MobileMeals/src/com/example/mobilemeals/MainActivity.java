@@ -2,6 +2,9 @@ package com.example.mobilemeals;
 
 
 import java.util.ArrayList;
+
+
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.app.ActionBar;
@@ -18,7 +21,7 @@ public class MainActivity extends Activity implements FragmentTruckListView.OnTr
 	static public String MAP_TAG = "Map";
 	static public String TRUCK_TAG = "Trucks";
 	static public String USER_KEY = "username";
-	static public String baseUrl = "http://192.168.1.5:3000";
+	static public String baseUrl = "http://192.168.1.3:3000";
 	static public String postUserUrl = baseUrl + "/users/session";
 	static public String signUpUrl = baseUrl + "/users";
 	static public String truckUrl = baseUrl + "/truck";
@@ -90,16 +93,26 @@ public class MainActivity extends Activity implements FragmentTruckListView.OnTr
 
 	@Override
 	public void onTruckSelected(Truck t) {
-		FragmentManager fragmentManager = getFragmentManager();
-		FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-		FragmentTweetListView tweetListView = new FragmentTweetListView();
-
-		tweetListView.setTweets(t.tweets.getTweets());
+		String[] content = t.getTweets().getTweets().get(0).getContent().split(" ");
+		for(int i = 0; i<content.length; i++){
+			if (content[i].startsWith("http")){
+				String url = content[i].trim();
+				
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				intent.setData(Uri.parse(url));
+				startActivity(intent);
+			}
+		}
+		//FragmentManager fragmentManager = getFragmentManager();
+		//FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+		//FragmentTweetListView tweetListView = new FragmentTweetListView();
+		
+		//tweetListView.setTweets(t.tweets.getTweets());
 	
 		//fragmentManager.
-		fragmentTransaction.replace(R.id.main_activity_layout, tweetListView);
-		fragmentTransaction.addToBackStack(null);
-		fragmentTransaction.commit();
+		//fragmentTransaction.replace(R.id.main_activity_layout, tweetListView);
+	//	fragmentTransaction.addToBackStack(null);
+		//fragmentTransaction.commit();
 		
 	}
 

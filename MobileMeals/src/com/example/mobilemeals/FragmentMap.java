@@ -30,12 +30,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Criteria;
@@ -44,7 +42,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -112,7 +109,13 @@ public class FragmentMap extends Fragment {
 					int pos, long id) {
 				String truck_name = (String) parent.getItemAtPosition(pos);
 				String url = trucks_map.get(truck_name).avatar;
-
+				
+				if (!trucks_map.get(truck_name).getLastLocation().equals("null")){
+					zoomOnLocation(trucks_map.get(truck_name).getLastLocation());
+					Log.i("ZOOM ON LOCATION", trucks_map.get(truck_name).getLastLocation());
+				}
+				
+				
 				// set the marker icon to the avatar of selected truck
 				new LoadBitmapAsync(url){
 
@@ -152,11 +155,13 @@ public class FragmentMap extends Fragment {
 
 					JSONObject obj = new JSONObject();
 					try {
+						String loc = String.valueOf(curTruckLocation.longitude)+","+String.valueOf(curTruckLocation.latitude);
 						obj.put("id",trucks_map.get(truckName).tweets.getTweets().get(0)._id);
-						obj.put("location", Double.valueOf(curTruckLocation.longitude)+","+Double.valueOf(curTruckLocation.latitude));
+						obj.put("location", loc);
 						obj.put("truckname", truckName);
 						Log.i("JSON obj", obj.toString());
 						new PostRequestJsonAsync(MainActivity.truckUrl).execute(obj);
+						trucks_map.get(truckName).setLastLocation(loc);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -222,6 +227,10 @@ public class FragmentMap extends Fragment {
 				
 				Truck t = new Truck(name, _id, __v, date);
 				t.setLastLocation(location);
+				
+				if (trucks_map.containsKey(name)){
+					trucks_map.get(name).setLastLocation(location);
+				}
 				
 				Log.i("Loaded Truck", name);
 				Log.i("Loaded Truck loc", location);
@@ -293,11 +302,12 @@ public class FragmentMap extends Fragment {
 		Log.i("Marking truck", loc.toString());
 
 		if (loc.length >= 2){
-			Double lat = Double.valueOf(loc[0]);
-			Double lng = Double.valueOf(loc[1]);
+			Double lat = Double.valueOf(loc[1]);
+			Double lng = Double.valueOf(loc[0]);
 			LatLng pos = new LatLng(lat, lng);
 			Log.i("Marking truck geo", pos.toString());
-
+			Log.i("Marking truck name", t.name);
+			
 			map.addMarker(new MarkerOptions()
 			.title(t.name)
 			.position(pos)
@@ -327,6 +337,14 @@ public class FragmentMap extends Fragment {
 		.position(location));
 	}
 
+	public void zoomOnLocation(String location){
+		String[] loc = location.split(",");
+		Double lat = Double.valueOf(loc[1]);
+		Double lng = Double.valueOf(loc[0]);
+		LatLng pos = new LatLng(lat, lng);
+		map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 11));
+	}
+	
 	public void zoomOnCharlotte(){
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(35.2270869, -80.8431267), 13));
 	}
